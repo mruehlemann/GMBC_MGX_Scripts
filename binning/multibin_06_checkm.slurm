@@ -2,7 +2,7 @@
 #SBATCH -c 24
 #SBATCH --mem=240gb
 #SBATCH --time=10-00:00
-#SBATCH --output=/home/sukmb276/Isilon/Metagenomes/projects/210916_GMBC_MGX/log/%A_%a.out
+#SBATCH --output=/work_ifs/ikmb_repository/shared/microbiome/GMbC_binning/log/%A_%a.out
 
 ###########################
 ####    SETUP     #######
