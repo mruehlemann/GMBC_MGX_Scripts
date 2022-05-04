@@ -40,6 +40,9 @@ this_local=$(grep -w $s /work_ifs/sukmb276/Metagenomes/projects/210916_GMBC_MGX/
 #############################
 ####    MAXBIN DEFAULT #######
 #############################
+ava=$(ls -d $datafolder/Assembly_${s})
+if [ "$ava" == "" ]; then exit; fi
+if [ -e "$workfolder/samples/${s}/${s}.refined.out" ]; then exit; fi
 
 cd $workfolder/samples/${s}
 
@@ -50,7 +53,7 @@ awk '{print $1"\t"$2"\tconcoct"}'  ${s}.concoct.contigs_to_bin.tsv >> ${s}.conti
 awk '{print $1"\t"$2"\tmetabat2"}'  ${s}.metabat2.contigs_to_bin.tsv >> ${s}.contigs_to_bin.tsv
 awk '{print $1"\t"$2"\tmaxbin2"}'  ${s}.maxbin2.contigs_to_bin.tsv >> ${s}.contigs_to_bin.tsv
 
-Rscript /work_ifs/sukmb276/github/BiScoReTo/BiScoReTo.R -i ${s}.contigs_to_bin.tsv --hmm ${s}.hmm -o ${s} 
+Rscript /work_ifs/sukmb276/github/BiScoReTo/BiScoReTo.R -i ${s}.contigs_to_bin.tsv --hmm ${s}.hmm -o ${s}
 
 source activate binning_env
 mkdir -p cleanbins
