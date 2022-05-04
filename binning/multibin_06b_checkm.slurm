@@ -1,9 +1,9 @@
 #!/bin/bash
-#SBATCH -c 1
-#SBATCH --mem=10gb
+#SBATCH -c 6
+#SBATCH --mem=60Gb
 #SBATCH --time=10-00:00
 #SBATCH --output=/work_ifs/ikmb_repository/shared/microbiome/GMbC_binning/log/%A_%a.out
-#SBATCH --job-name="mb_05b_refine"
+#SBATCH --job-name="mb_06b_checkm"
 
 ###########################
 ####    SETUP     #######
@@ -16,8 +16,7 @@ cd $workfolder
 datafolder="/work_ifs/ikmb_repository/shared/microbiome/GMbC/Assemblies_megahit"
 datafolder_reads="/work_ifs/ikmb_repository/shared/microbiome/rawdata/gmbc_data/NovaSeq_Data/"
 
-source activate biscoreto_env
-
+source activate metagenome_env
 #ls $workfolder/assemblies > $workfolder/samples_available.txt
 
 all_local=($(cut -f 3 /work_ifs/sukmb276/Metagenomes/projects/210916_GMBC_MGX/metadata_gmbc_bn10_complete.tsv | grep -v localit | sort | uniq))
@@ -36,22 +35,13 @@ s=${all_samples[$SLURM_ARRAY_TASK_ID]}
 
 this_local=$(grep -w $s /work_ifs/sukmb276/Metagenomes/projects/210916_GMBC_MGX/metadata_gmbc_bn10_complete.tsv | cut -f 3 )
 
-
 #############################
 ####    MAXBIN DEFAULT #######
 #############################
+cd $TMPDIR
 
-cd $workfolder/samples/${s}
+ava=$(ls -d $datafolder/Assembly_${s})
+if [ "$ava" == "" ]; then exit; fi
+if [ -e "$workfolder/samples/${s}/${s}.checkm.out" ]; then exit; fi
 
-grep $s $workfolder/subgroups/${this_local}/VAMB_out/clusters.tsv > ${s}.vamb.contigs_to_bin.tsv
-
-awk '{print $1"\t"$2"\tvamb"}'  ${s}.vamb.contigs_to_bin.tsv > ${s}.contigs_to_bin.tsv
-awk '{print $1"\t"$2"\tconcoct"}'  ${s}.concoct.contigs_to_bin.tsv >> ${s}.contigs_to_bin.tsv
-awk '{print $1"\t"$2"\tmetabat2"}'  ${s}.metabat2.contigs_to_bin.tsv >> ${s}.contigs_to_bin.tsv
-awk '{print $1"\t"$2"\tmaxbin2"}'  ${s}.maxbin2.contigs_to_bin.tsv >> ${s}.contigs_to_bin.tsv
-
-Rscript /work_ifs/sukmb276/github/BiScoReTo/BiScoReTo.R -i ${s}.contigs_to_bin.tsv --hmm ${s}.hmm -o ${s} 
-
-source activate binning_env
-mkdir -p cleanbins
-cat ${s}.refined.contig_to_bin.out | awk '{if(NR==1){print "contig_id,cluster_id"; next}; print $2","$1}' | sed 's/[.]fasta//' | extract_fasta_bins.py $datafolder/Assembly_${s}/${s}.contigs.fa /dev/stdin --output_path cleanbins
+checkm lineage_wf -x fa --pplacer_threads ${SLURM_CPUS_PER_TASK} -t ${SLURM_CPUS_PER_TASK} -f $workfolder/samples/${s}/${s}.checkm.out --tab_table $workfolder/samples/${s}/cleanbins checkm_out

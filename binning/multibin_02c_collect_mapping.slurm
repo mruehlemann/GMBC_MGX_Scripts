@@ -1,8 +1,9 @@
 #!/bin/bash
-#SBATCH -c 24
-#SBATCH --mem=240gb
+#SBATCH -c 1
+#SBATCH --mem=10Gb
 #SBATCH --time=10-00:00
 #SBATCH --output=/work_ifs/ikmb_repository/shared/microbiome/GMbC_binning/log/%A_%a.out
+#SBATCH --job-name="mb_02a_trig"
 
 ###########################
 ####    SETUP     #######
@@ -15,38 +16,25 @@ cd $workfolder
 datafolder="/work_ifs/ikmb_repository/shared/microbiome/GMbC/Assemblies_megahit"
 datafolder_reads="/work_ifs/ikmb_repository/shared/microbiome/rawdata/gmbc_data/NovaSeq_Data/"
 
-source activate metagenome_env
-
+module load R
 #ls $workfolder/assemblies > $workfolder/samples_available.txt
 
 all_local=($(cut -f 3 /work_ifs/sukmb276/Metagenomes/projects/210916_GMBC_MGX/metadata_gmbc_bn10_complete.tsv | grep -v localit | sort | uniq))
 
 ####################################
-####    GROUP SELECTION     ########
+####    SAMPLE SELECTION     ########
 ####################################
 
 ## selects all samples that belong to the respective subgroup (locality = column 3 of the metadata sheet)
 this_local=${all_local[$SLURM_ARRAY_TASK_ID]}
 mkdir -p $workfolder/subgroups/${this_local}
+local_samples_indices=$(awk -veth=${this_local} '{if($3==eth) print (NR-1)}' /work_ifs/sukmb276/Metagenomes/projects/210916_GMBC_MGX/metadata_gmbc_bn10_complete.tsv | tr '\n' ',' | sed 's/[,]$//')
 local_samples=$(awk -veth=${this_local} '{if($3==eth) print $1}' /work_ifs/sukmb276/Metagenomes/projects/210916_GMBC_MGX/metadata_gmbc_bn10_complete.tsv)
-cd $TMPDIR
 
-###########################
-####    METABAT     #######
-###########################
+##################################
+####    start collection   ########
+##################################
 
-for s in ${local_samples}; do
-#ava=$(grep $s $workfolder/samples_available.txt)
-ava=$(ls -d $datafolder/Assembly_${s})
-if [ "$ava" == "" ]; then continue; fi
-echo $s
-mkdir -p $workfolder/samples/${s}
-mkdir -p metabat
-jgi_summarize_bam_contig_depths --outputDepth $workfolder/samples/${s}/${s}.depth.txt $datafolder/Assembly_${s}/$s.sorted.bam
-
-metabat2 -i $datafolder/Assembly_${s}/$s.contigs.fa -a $workfolder/samples/${s}/${s}.depth.txt -o ${s}_metabat/${s}.metabat2 -t ${SLURM_CPUS_PER_TASK} -m 2000
-for fa in $(ls ${s}_metabat/${s}.metabat2.*.fa); do mv $fa ${fa}sta; done
-
-grep '>' metabat/*fasta | cut -d '/' -f 2 | sed 's/:>/\ /' > $workfolder/samples/${s}/${s}.metabat.contigs_to_bin.tsv
-
-done
+cd $workfolder/subgroups/${this_local}
+Rscript /work_ifs/ikmb_repository/shared/microbiome/GMbC_binning/GMBC_Scripts/binning/multibin_02c_collect_mapping.R
+sed -i "s/[.]var/-var/g" ${this_local}.all_depth.tsv

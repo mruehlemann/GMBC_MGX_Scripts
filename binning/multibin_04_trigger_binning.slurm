@@ -38,5 +38,5 @@ sbatch --array=${local_samples_indices}%10 GMBC_Scripts/binning/multibin_04a_met
 #sbatch --array=${SLURM_ARRAY_TASK_ID} GMBC_Scripts/binning/multibin_04c_maxbin_ar.slurm
 #sbatch --array=${SLURM_ARRAY_TASK_ID} GMBC_Scripts/binning/multibin_04c_maxbin_bac.slurm
 sbatch --array=${local_samples_indices}%10 GMBC_Scripts/binning/multibin_04c_maxbin_def_per_sample.slurm
-#sbatch --array=${SLURM_ARRAY_TASK_ID} GMBC_Scripts/binning/multibin_04b_vamb.slurm
+sbatch --array=${SLURM_ARRAY_TASK_ID} GMBC_Scripts/binning/multibin_04b_vamb.slurm
 sbatch --array=${local_samples_indices}%10 GMBC_Scripts/binning/multibin_04d_concoct_per_sample.slurm

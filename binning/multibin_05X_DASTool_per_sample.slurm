@@ -1,9 +1,9 @@
 #!/bin/bash
-#SBATCH -c 1
-#SBATCH --mem=10gb
+#SBATCH -c 8
+#SBATCH --mem=80gb
 #SBATCH --time=10-00:00
 #SBATCH --output=/work_ifs/ikmb_repository/shared/microbiome/GMbC_binning/log/%A_%a.out
-#SBATCH --job-name="mb_05b_refine"
+#SBATCH --job-name="mb_05x_dastool"
 
 ###########################
 ####    SETUP     #######
@@ -16,7 +16,7 @@ cd $workfolder
 datafolder="/work_ifs/ikmb_repository/shared/microbiome/GMbC/Assemblies_megahit"
 datafolder_reads="/work_ifs/ikmb_repository/shared/microbiome/rawdata/gmbc_data/NovaSeq_Data/"
 
-source activate biscoreto_env
+module load R
 
 #ls $workfolder/assemblies > $workfolder/samples_available.txt
 
@@ -41,17 +41,19 @@ this_local=$(grep -w $s /work_ifs/sukmb276/Metagenomes/projects/210916_GMBC_MGX/
 ####    MAXBIN DEFAULT #######
 #############################
 
-cd $workfolder/samples/${s}
+source activate dastool_env
+module load ruby
 
-grep $s $workfolder/subgroups/${this_local}/VAMB_out/clusters.tsv > ${s}.vamb.contigs_to_bin.tsv
+export PATH=$PATH:/work_ifs/sukmb276/software/DAS_Tool/
 
-awk '{print $1"\t"$2"\tvamb"}'  ${s}.vamb.contigs_to_bin.tsv > ${s}.contigs_to_bin.tsv
-awk '{print $1"\t"$2"\tconcoct"}'  ${s}.concoct.contigs_to_bin.tsv >> ${s}.contigs_to_bin.tsv
-awk '{print $1"\t"$2"\tmetabat2"}'  ${s}.metabat2.contigs_to_bin.tsv >> ${s}.contigs_to_bin.tsv
-awk '{print $1"\t"$2"\tmaxbin2"}'  ${s}.maxbin2.contigs_to_bin.tsv >> ${s}.contigs_to_bin.tsv
+cd /work_ifs/ikmb_repository/shared/microbiome/GMbC_binning/samples/${s}
+mkdir dastool_input
+awk '{print $2"\t"$1}' ${s}.maxbin2.contigs_to_bin.tsv > dastool_input/maxbin2.out
+awk '{print $2"\t"$1}' ${s}.metabat2.contigs_to_bin.tsv > dastool_input/metabat2.out
+awk '{print $2"\t"$1}' ${s}.concoct.contigs_to_bin.tsv > dastool_input/concoct.out
+awk '{print $2"\t"$1}' ${s}.vamb.contigs_to_bin.tsv > dastool_input/vamb.out
 
-Rscript /work_ifs/sukmb276/github/BiScoReTo/BiScoReTo.R -i ${s}.contigs_to_bin.tsv --hmm ${s}.hmm -o ${s} 
+mkdir dastool_out
+DAS_Tool -i dastool_input/maxbin2.out,dastool_input/metabat2.out,dastool_input/concoct.out,dastool_input/vamb.out -c $datafolder/Assembly_${s}/${s}.contigs.fa -o dastool_out/${s}.dastool -p ${s}.prodigal.faa --write_bin_evals --labels=maxbin,metabat,concoct,vamb -t 8 --write_bins
 
-source activate binning_env
-mkdir -p cleanbins
-cat ${s}.refined.contig_to_bin.out | awk '{if(NR==1){print "contig_id,cluster_id"; next}; print $2","$1}' | sed 's/[.]fasta//' | extract_fasta_bins.py $datafolder/Assembly_${s}/${s}.contigs.fa /dev/stdin --output_path cleanbins
+rm -r dastool_input
