@@ -35,4 +35,4 @@ local_samples_indices=$(awk -veth=${this_local} '{if($3==eth) print (NR-1)}' /wo
 ####    start slurms     ########
 ##################################
 
-sbatch --array=${local_samples_indices}%10 /work_ifs/ikmb_repository/shared/microbiome/GMbC_binning/GMBC_Scripts/binning/multibin_02b_mapping_per_sample.slurm
+sbatch --array=${local_samples_indices}%10 /work_ifs/ikmb_repository/shared/microbiome/GMbC_binning/GMBC_MGX_Scripts/binning/multibin_02b_mapping_per_sample.slurm
