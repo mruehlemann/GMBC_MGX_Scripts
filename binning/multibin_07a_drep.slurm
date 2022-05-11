@@ -59,3 +59,4 @@ conda deactivate
 
 cd $workfolder/subgroups/$this_local/
 module load R
+Rscript  $workfolder/GMBC_MGX_Scripts/binning/multibin_07a_drep_get_representatives.R
