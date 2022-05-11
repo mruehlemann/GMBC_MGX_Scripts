@@ -2,9 +2,9 @@
 #SBATCH --reservation=sukmb412_13
 #SBATCH --gres=gpu:1
 #SBACTH --nodelist=medg01
-#SBATCH -c 16
-#SBATCH --mem=500gb
-#SBATCH --time=3-00:00
+#SBATCH -c 8
+#SBATCH --mem=80gb
+#SBATCH --time=1-00:00
 #SBATCH --output=/work_ifs/ikmb_repository/shared/microbiome/GMbC_binning/log/%A_%a.out
 #SBATCH --job-name="mb_04b_vamb"
 
@@ -38,10 +38,16 @@ local_samples=$(awk -veth=${this_local} '{if($3==eth) print $1}' $workfolder/met
 ###########################
 
 module load miniconda3
-source activate gtdbtk_2.0.0
-GTDBTK_DATA_PATH=/work_ifs/ikmb_repository/databases/GTDB-TK/release207
+source activate binning_env
 
 cd $workfolder/subgroups/$this_local/
-for i in $local_samples; do ls $workfolder/samples/$i/cleanbins/*.fa; done | awk -F '/' '{print $0"\t"$NF}' | sed 's/[.]fa$//' > $this_local.cleanbins_list
+mkdir -p genome_links
 
-gtdbtk classify_wf --batchfile $this_local.cleanbins_list --cpus $SLURM_CPUS_PER_TASK --full_tree -x fa --pplacer_cpus $SLURM_CPUS_PER_TASK --out_dir gtdbtk_r207_out --prefix $this_local
+for i in $local_samples; do ls $workfolder/samples/$i/cleanbins/*.fa; done | awk -F '/' '{print $0"\t"$NF}' | sed 's/[.]fa$//' >  $workfolder/subgroups/$this_local/$this_local.cleanbins_list
+
+
+cd $TMPDIR
+cut -f 1 $workfolder/subgroups/$this_local/$this_local.cleanbins_list > genomes_list
+dRep compare -g genomes_list -p $SLURM_CPUS_PER_TASK --S_algorithm fastANI -sa 0.95 -d .
+cp data_tables/Cdb.csv ${this_local}.dRep_fastANI_95.csv
+python $workfolder/binning/multibin_07a_drep_fastANI99.py
