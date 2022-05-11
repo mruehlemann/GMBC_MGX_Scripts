@@ -7,7 +7,7 @@ import drep.d_cluster.compare_utils
 
 
 wd=drep.WorkDirectory.WorkDirectory(".")
-Ndb = self.wd.get_db('Ndb')
+Ndb = wd.get_db('Ndb')
 id="primary_cluster"
 
 Cdb = pd.DataFrame()
