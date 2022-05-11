@@ -1,7 +1,4 @@
 #!/bin/bash
-#SBATCH --reservation=sukmb412_13
-#SBATCH --gres=gpu:1
-#SBACTH --nodelist=medg01
 #SBATCH -c 8
 #SBATCH --mem=80gb
 #SBATCH --time=1-00:00
