@@ -45,9 +45,17 @@ mkdir -p genome_links
 
 for i in $local_samples; do ls $workfolder/samples/$i/cleanbins/*.fa; done | awk -F '/' '{print $0"\t"$NF}' | sed 's/[.]fa$//' >  $workfolder/subgroups/$this_local/$this_local.cleanbins_list
 
+head -n 1 $workfolder/samples/$(echo $local_samples | cut -d ' ' -f 1)/*.refined.out > ${this_local}.refined.out
+for i in $local_samples; do cat $workfolder/samples/$i/$i.refined.out | grep -v "uniqueSCGs.gtdb_rel207_bac120"; done >> ${this_local}.refined.out
 
 cd $TMPDIR
 cut -f 1 $workfolder/subgroups/$this_local/$this_local.cleanbins_list > genomes_list
 dRep compare -g genomes_list -p $SLURM_CPUS_PER_TASK --S_algorithm fastANI -sa 0.95 -d .
 cp data_tables/Cdb.csv ${this_local}.dRep_fastANI_95.csv
 python $workfolder/GMBC_MGX_Scripts/binning/multibin_07a_drep_fastANI99.py
+cp data_tables/Cdb_99.csv ${this_local}.dRep_fastANI_99.csv
+cp ${this_local}.dRep_fastANI_95.csv ${this_local}.dRep_fastANI_99.csv $workfolder/subgroups/$this_local
+conda deactivate
+
+cd $workfolder/subgroups/$this_local/
+module load R
