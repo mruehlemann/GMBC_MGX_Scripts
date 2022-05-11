@@ -50,4 +50,4 @@ cd $TMPDIR
 cut -f 1 $workfolder/subgroups/$this_local/$this_local.cleanbins_list > genomes_list
 dRep compare -g genomes_list -p $SLURM_CPUS_PER_TASK --S_algorithm fastANI -sa 0.95 -d .
 cp data_tables/Cdb.csv ${this_local}.dRep_fastANI_95.csv
-python $workfolder/binning/multibin_07a_drep_fastANI99.py
+python $workfolder/GMBC_MGX_Scripts/binning/multibin_07a_drep_fastANI99.py

@@ -6,7 +6,7 @@ import drep.d_cluster.utils
 import drep.d_cluster.compare_utils
 
 
-wd=drep.WorkDirectory.WorkDirectory(wd)
+wd=drep.WorkDirectory.WorkDirectory(".")
 Ndb = self.wd.get_db('Ndb')
 id="primary_cluster"
 
