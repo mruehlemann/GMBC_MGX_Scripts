@@ -19,13 +19,17 @@ N50_2k = depth  %>% filter(contigLen >= 2000) %>% arrange(-contigLen) %>% mutate
 L50 = depth %>% arrange(-contigLen) %>% mutate(cumlen = cumsum(contigLen), rel_cumlen = cumlen/total_assembly_size) %>% filter(rel_cumlen < .5) %>% nrow()
 L50_2k = depth  %>% filter(contigLen >= 2000) %>% arrange(-contigLen) %>% mutate(cumlen = cumsum(contigLen), rel_cumlen = cumlen/total_assembly_size_2k) %>% filter(rel_cumlen < .5) %>% nrow()
 
+if(file.exists(paste0(this,".refined.contig_to_bin.out"))){
 c2b = read.table(paste0(this,".refined.contig_to_bin.out"), head=T, stringsAsFactors=F)
+}else{
+c2b = data.frame(contig=c(0), binnew=NA)
+}
 
 total_contigs_in_bins = nrow(depth %>% filter(contigName %in% c2b$contig))
 total_assembly_in_bins = depth %>% filter(contigName %in% c2b$contig) %>% pull(contigLen) %>% sum
 total_mapped_in_bins = depth  %>% mutate(mapped=contigLen * totalAvgDepth) %>% filter(contigName %in% c2b$contig) %>% pull(mapped) %>% sum
 
-num_bins = length(unique(c2b$binnew))
+num_bins = length(unique(na.omit(c2b$binnew)))
 
 hmm = read.table(paste0(this,".hmm"), head=F, stringsAsFactors=F)
 
