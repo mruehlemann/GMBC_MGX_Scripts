@@ -27,6 +27,8 @@ total_mapped_in_bins = depth  %>% mutate(mapped=contigLen * totalAvgDepth) %>% f
 
 num_bins = length(unique(c2b$binnew))
 
+hmm = read.table(paste0(this,".hmm"), head=F, stringsAsFactors=F)
+
 scg_count_max = table(hmm$V2) %>% max
 scg_count_q90 = table(hmm$V2) %>% quantile(probs=.9) %>% as.numeric()
 
