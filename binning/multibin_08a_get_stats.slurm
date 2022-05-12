@@ -1,12 +1,9 @@
 #!/bin/bash
-#SBATCH --reservation=sukmb412_13
-#SBATCH --gres=gpu:1
-#SBACTH --nodelist=medg01
-#SBATCH -c 16
-#SBATCH --mem=500gb
-#SBATCH --time=3-00:00
+#SBATCH -c 1
+#SBATCH --mem=10gb
+#SBATCH --time=1-00:00
 #SBATCH --output=/work_ifs/ikmb_repository/shared/microbiome/GMbC_binning/log/%A_%a.out
-#SBATCH --job-name="mb_04b_vamb"
+#SBATCH --job-name="mb_08a"
 
 ###########################
 ####    SETUP     #######
