@@ -38,3 +38,5 @@ awk -v batch=$SLURM_ARRAY_TASK_ID '{if(NR % 10 == 0) print}' $workfolder/allgrou
 gtdbtk classify_wf --batchfile batch --cpus $SLURM_CPUS_PER_TASK -x fa --pplacer_cpus $SLURM_CPUS_PER_TASK --out_dir gtdbtk_r207v2_out --prefix GMbC_batch_$SLURM_ARRAY_TASK_ID
 
 conda deactivate
+
+cp gtdbtk_r207v2_out/GMbC_batch_${SLURM_ARRAY_TASK_ID}.*.summary.tsv $workfolder/allgroups

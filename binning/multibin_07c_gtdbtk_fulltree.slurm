@@ -36,11 +36,10 @@ GTDBTK_DATA_PATH=/work_ifs/ikmb_repository/databases/GTDB-TK/release207_v2
 
 cd $workfolder/allgroups
 
-gtdbtk classify_wf --batchfile batch --cpus $SLURM_CPUS_PER_TASK -x fa --pplacer_cpus $SLURM_CPUS_PER_TASK --out_dir gtdbtk_r207v2_out --prefix GMbC_fulltree
-
+gtdbtk classify_wf --batchfile $workfolder/allgroups/GMbC.representatives_list --cpus $SLURM_CPUS_PER_TASK -x fa --pplacer_cpus $SLURM_CPUS_PER_TASK --full_tree --out_dir gtdbtk_r207v2_out --prefix GMbC_fulltree
 
 conda deactivate
-# 
+#
 #
 # source activate mashtee_env
 # cut -f 1 GMbC.representatives_list > GMbC.representatives_genomes
