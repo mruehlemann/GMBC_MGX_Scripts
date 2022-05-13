@@ -35,7 +35,7 @@ mkdir -p $workfolder/allgroups
 module load miniconda3
 source activate binning_env
 
-head -n 1 $workfolder/samples/$(ls $workfolder/samples | head -n 1)/*.refined.out > $workfolder/allgroups/all.rep97.refined.out
+head -n 1 $workfolder/samples/$(ls $workfolder/samples | head -n 1)/*.refined.out > $workfolder/allgroups/GMbC.rep97.refined.out
 
 for this_local in ${all_local[@]};do
 
@@ -62,4 +62,7 @@ module load R
 Rscript  $workfolder/GMBC_MGX_Scripts/binning/multibin_07b_drep_all_get_representative.R
 
 
-source activate binning_env
+while read line; do
+read genome cluster_95 domain score cluster_95_final <<< $(echo $line)
+grep -w $genome GMbC.rep97.cleanbins_list | awk -v cl=$cluster_95_final '{print $1"\t"cl}'
+done < GMbC.dRep_cluster95_representatives.tsv | tee GMbC.representatives_list

@@ -1,9 +1,12 @@
 #!/bin/bash
-#SBATCH -c 8
-#SBATCH --mem=80gb
-#SBATCH --time=1-00:00
+#SBATCH --reservation=sukmb412_13
+#SBATCH --gres=gpu:1
+#SBACTH --nodelist=medg01
+#SBATCH -c 16
+#SBATCH --mem=500gb
+#SBATCH --time=3-00:00
 #SBATCH --output=/work_ifs/ikmb_repository/shared/microbiome/GMbC_binning/log/%A_%a.out
-#SBATCH --job-name="mb_07c_gtdb"
+#SBATCH --job-name="mb_04b_vamb"
 
 ###########################
 ####    SETUP     #######
@@ -31,10 +34,14 @@ module load miniconda3
 source activate gtdbtk_2.1.0
 GTDBTK_DATA_PATH=/work_ifs/ikmb_repository/databases/GTDB-TK/release207_v2
 
-cd $TMPDIR
-#cd $workfolder/allgroups
-awk -v batch=$SLURM_ARRAY_TASK_ID '{if(NR % 10 == 0) print}' $workfolder/allgroups/GMbC.representatives_list > batch
+cd $workfolder/allgroups
 
-gtdbtk classify_wf --batchfile batch --cpus $SLURM_CPUS_PER_TASK -x fa --pplacer_cpus $SLURM_CPUS_PER_TASK --out_dir gtdbtk_r207v2_out --prefix GMbC_batch_$SLURM_ARRAY_TASK_ID
+gtdbtk classify_wf --batchfile batch --cpus $SLURM_CPUS_PER_TASK -x fa --pplacer_cpus $SLURM_CPUS_PER_TASK --out_dir gtdbtk_r207v2_out --prefix GMbC_fulltree
+
 
 conda deactivate
+# 
+#
+# source activate mashtee_env
+# cut -f 1 GMbC.representatives_list > GMbC.representatives_genomes
+# mashtree --numcpus 24 --file-of-files GMbC.representatives_genomes --outtree GMbC.mashtree.tre
