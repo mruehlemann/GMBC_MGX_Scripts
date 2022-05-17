@@ -44,7 +44,7 @@ PHAMB_DIR="/work_ifs/ikmb_repository/shared/microbiome/databases/phamb_ressource
 
 ava=$(ls -d $datafolder/Assembly_${s})
 if [ "$ava" == "" ]; then exit; fi
-if [ -e "$workfolder/samples/${s}/virus_detection/unbinned_contigs/${s}.checkv.out" ]; then exit; fi
+if [ -e "$workfolder/samples/${s}/virus_detection/binned_contigs/${s}.checkv.out" ]; then exit; fi
 
 cat $workfolder/samples/${s}/cleanbins/*.fa > allbinned.fa
 
@@ -57,5 +57,7 @@ checkv quality_summary allbinned.fa checkv_out
 
 mkdir -p $workfolder/samples/${s}/virus_detection/binned_contigs/phamb_output
 
-cp checkv_out/quality_summary.tsv $workfolder/samples/${s}/virus_detection/binned_contigs/${s}.checkv.binned.out
-cat checkv_out/*.fna > $workfolder/samples/${s}/virus_detection/binned_contigs/${s}.checkv.candidates.fna
+cp checkv_out/quality_summary.tsv $workfolder/samples/${s}/virus_detection/binned_contigs/${s}.checkv.out
+if [ -f "checkv_out/proviruses.fna" ]; then
+cp checkv_out/proviruses.fna $workfolder/samples/${s}/virus_detection/binned_contigs/${s}.checkv.proviruses.fna
+fi

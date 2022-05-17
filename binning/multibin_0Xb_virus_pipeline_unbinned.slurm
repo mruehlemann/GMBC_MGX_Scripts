@@ -64,7 +64,8 @@ cat phamb_discovery/bact_contigs.txt phamb_discovery/short_contigs.txt | cut -d 
 
 ### Gene calls from unbinned contigs are retained for annotation
 grep '>' phamb_discovery/contigs.fna | tr -d '>' | cut -f 1 -d ' ' > phamb_discovery/good_contigs.txt
-cat phamb_discovery/bad_contigs.txt | cut -f 1 | awk '{for(i=1;i<=1000;++i) print $1"_"i}' | /work_ifs/sukmb276/software/bin/faSomeRecords $workfolder/samples/${s}/${s}.prodigal.faa -exclude /dev/stdin phamb_discovery/proteins.faa
+#cat phamb_discovery/bad_contigs.txt | cut -f 1 | awk '{for(i=1;i<=1000;++i) print $1"_"i}' | /work_ifs/sukmb276/software/bin/faSomeRecords $workfolder/samples/${s}/${s}.prodigal.faa -exclude /dev/stdin phamb_discovery/proteins.faa
+cat phamb_discovery/good_contigs.txt | cut -f 1 | awk '{for(i=1;i<=1000;++i) print $1"_"i}' | /work_ifs/sukmb276/software/bin/faSomeRecords $workfolder/samples/${s}/${s}.prodigal.faa /dev/stdin phamb_discovery/proteins.faa
 
 #### annotation of contigs using DeepVirFinder
 cd phamb_discovery

@@ -52,7 +52,7 @@ cat $workfolder/samples/${s}/${s}.depth.txt | awk -v s=$s '{if(NR>1){print s"_"$
 ### metabat
 
 mkdir -p metabat
-metabat2 -i $datafolder/Assembly_${s}/$s.contigs.fa -a $workfolder/samples/${s}/${s}.depth.txt -o ${s}_metabat/${s}.metabat2 -t ${SLURM_CPUS_PER_TASK} -m 2000
+metabat2 -i $datafolder/Assembly_${s}/$s.contigs.fa -a ${s}.depth.txt -o ${s}_metabat/${s}.metabat2 -t ${SLURM_CPUS_PER_TASK} -m 2000
 for fa in $(ls ${s}_metabat/${s}.metabat2.*.fa); do mv $fa ${fa}sta; done
 
 grep '>' ${s}_metabat/*fasta | cut -d '/' -f 2 | sed 's/:>/\ /' > $workfolder/samples/${s}/${s}.metabat2.contigs_to_bin.tsv

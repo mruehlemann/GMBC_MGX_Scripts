@@ -33,7 +33,7 @@ GTDBTK_DATA_PATH=/work_ifs/ikmb_repository/databases/GTDB-TK/release207_v2
 
 cd $TMPDIR
 #cd $workfolder/allgroups
-awk -v batch=$SLURM_ARRAY_TASK_ID '{if(NR % 10 == 0) print}' $workfolder/allgroups/GMbC.representatives_list > batch
+awk -vbatch=$SLURM_ARRAY_TASK_ID '{if(NR % 10 == batch) print}' $workfolder/allgroups/GMbC.representatives_list > batch
 
 gtdbtk classify_wf --batchfile batch --cpus $SLURM_CPUS_PER_TASK -x fa --pplacer_cpus $SLURM_CPUS_PER_TASK --out_dir gtdbtk_r207v2_out --prefix GMbC_batch_$SLURM_ARRAY_TASK_ID
 

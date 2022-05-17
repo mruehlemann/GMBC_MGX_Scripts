@@ -38,6 +38,10 @@ cd $workfolder/allgroups
 
 gtdbtk classify_wf --batchfile $workfolder/allgroups/GMbC.representatives_list --cpus $SLURM_CPUS_PER_TASK -x fa --pplacer_cpus $SLURM_CPUS_PER_TASK --full_tree --out_dir gtdbtk_r207v2_out --prefix GMbC_fulltree
 
+cd gtdbtk_r207v2_out/align
+gtdbtk infer --msa_file GMbC_fulltree.ar53.user_msa.fasta.gz --cpus 24 --out_dir ar53_infer_tree
+gtdbtk infer --msa_file GMbC_fulltree.bac120.user_msa.fasta.gz --cpus 24 --out_dir bac120_infer_tree
+
 conda deactivate
 #
 #

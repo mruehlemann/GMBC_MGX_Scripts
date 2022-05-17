@@ -36,4 +36,4 @@ cd $workfolder/samples/$s
 
 module load R
 
-Rscript $workfolder/GMBC_MGX_Scripts/binning/multibin_08a_assembly_and_binning_stats.R
+Rscript $workfolder/GMBC_MGX_Scripts/binning/multibin_06a_assembly_and_binning_stats.R

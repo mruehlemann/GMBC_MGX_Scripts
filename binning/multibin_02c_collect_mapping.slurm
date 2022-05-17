@@ -36,5 +36,5 @@ local_samples=$(awk -veth=${this_local} '{if($3==eth) print $1}' /work_ifs/sukmb
 ##################################
 
 cd $workfolder/subgroups/${this_local}
-Rscript /work_ifs/ikmb_repository/shared/microbiome/GMbC_binning/GMBC_Scripts/binning/multibin_02c_collect_mapping.R
+Rscript /work_ifs/ikmb_repository/shared/microbiome/GMbC_binning/GMBC_MGX_Scripts/binning/multibin_02c_collect_mapping.R
 sed -i "s/[.]var/-var/g" ${this_local}.all_depth.tsv
