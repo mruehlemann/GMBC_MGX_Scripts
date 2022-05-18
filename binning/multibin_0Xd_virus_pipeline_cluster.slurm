@@ -1,6 +1,6 @@
 #!/bin/bash
-#SBATCH -c 6
-#SBATCH --mem=60Gb
+#SBATCH -c 2
+#SBATCH --mem=20Gb
 #SBATCH --time=10-00:00
 #SBATCH --output=/work_ifs/ikmb_repository/shared/microbiome/GMbC_binning/log/%A_%a.out
 #SBATCH --job-name="mb_06b_checkm"
@@ -44,20 +44,30 @@ PHAMB_DIR="/work_ifs/ikmb_repository/shared/microbiome/databases/phamb_ressource
 
 ava=$(ls -d $datafolder/Assembly_${s})
 if [ "$ava" == "" ]; then exit; fi
-if [ -e "$workfolder/samples/${s}/virus_detection/unbinned_contigs/${s}.checkv.out" ]; then exit; fi
+if [ -e "$workfolder/samples/${s}/virus_detection/unbinned_contigs/${s}.checkv_final.out" ]; then exit; fi
+
+
+### get seqs with at least low viral confidence
+egrep "quality|Complete" $workfolder/samples/${s}/virus_detection/unbinned_contigs/$s.checkv.out | awk '{if($10 >= 50) print $1}' | /work_ifs/sukmb276/software/bin/faSomeRecords $workfolder/samples/${s}/virus_detection/unbinned_contigs/$s.checkv.candidates.fna /dev/stdin $s.viral.fna
 
 ### from checkv website: https://bitbucket.org/berkeleylab/checkv/src/master/
 #First, create a blast+ database:
-makeblastdb -in <my_seqs.fna> -dbtype nucl -out <my_db>
+makeblastdb -in $s.viral.fna -dbtype nucl -out $s.viral.db
 
 #Next, use megablast from blast+ package to perform all-vs-all blastn of sequences:
-blastn -query <my_seqs.fna> -db <my_db> -outfmt '6 std qlen slen' -max_target_seqs 10000 -o <my_blast.tsv> -num_threads 32
+blastn -query $s.viral.fna -db $s.viral.db -outfmt '6 std qlen slen' -max_target_seqs 10000 -out viral.blast.tsv -num_threads ${SLURM_CPUS_PER_TASK}
 
 #Note: using the -perc_identity flag will speed up the search at the cost of sensitivity:
-blastn -query <my_seqs.fna> -db <my_db> -outfmt '6 std qlen slen' -max_target_seqs 10000 -perc_identity 90 -o <my_blast.tsv> -num_threads 32
+#blastn -query <my_seqs.fna> -db <my_db> -outfmt '6 std qlen slen' -max_target_seqs 10000 -perc_identity 90 -o <my_blast.tsv> -num_threads 32
 
 #Next, calculate pairwise ANI by combining local alignments between sequence pairs:
-anicalc.py -i <my_blast.tsv> -o <my_ani.tsv>
+python $PHAMB_DIR/checkv/scripts/anicalc.py -i viral.blast.tsv -o ${s}.ani.tsv
 
-#Finally, perform UCLUST-like clustering using the MIUVIG recommended-parameters (95% ANI + 85% AF): 
-aniclust.py --fna <my_seqs.fna> --ani <my_ani.tsv> --out <my_clusters.tsv> --min_ani 95 --min_tcov 85 --min_qcov 0
+#Finally, perform UCLUST-like clustering using the MIUVIG recommended-parameters (95% ANI + 85% AF):
+python $PHAMB_DIR/checkv/scripts/aniclust.py --fna $s.viral.fna --ani ${s}.ani.tsv --out ${s}.viral_cluster.tsv --min_ani 95 --min_tcov 85 --min_qcov 0
+
+#### keep good quality
+head -n 1 $workfolder/samples/${s}/virus_detection/unbinned_contigs/$s.checkv.out > $workfolder/samples/${s}/virus_detection/unbinned_contigs/$s.checkv_final.out
+cut -f 1 ${s}.viral_cluster.tsv | xargs -I{} grep -w {} $workfolder/samples/${s}/virus_detection/unbinned_contigs/$s.checkv.out >> $workfolder/samples/${s}/virus_detection/unbinned_contigs/$s.checkv_final.out
+
+cut -f 1 ${s}.viral_cluster.tsv | /work_ifs/sukmb276/software/bin/faSomeRecords $workfolder/samples/${s}/virus_detection/unbinned_contigs/$s.checkv.candidates.fna /dev/stdin $workfolder/samples/${s}/virus_detection/unbinned_contigs/$s.viral_final.fna
