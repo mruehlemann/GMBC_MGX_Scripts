@@ -68,18 +68,18 @@ python $PHAMB_DIR/checkv/scripts/aniclust.py --fna $s.viral.fna --ani ${s}.ani.t
 
 #### keep good quality
 
-grep '>' $s.viral_cluster.tsv | tr -d '>' | awk -v s=$s '{print $0"\t"s"_viral_" ++i}' > $workfolder/samples/${s}/virus_detection/unbinned_contigs/$s.viral_renamed.tsv
+cut -f 1 $s.viral_cluster.tsv | awk -v s=$s '{print $0"\t"s"_viral_" ++i}' > $workfolder/samples/${s}/virus_detection/unbinned_contigs/$s.viral_renamed.tsv
 
 head -n 1 $workfolder/samples/${s}/virus_detection/unbinned_contigs/$s.checkv.out > $s.checkv_oldname.out
 cut -f 1 ${s}.viral_cluster.tsv | xargs -I{} grep -w {} $workfolder/samples/${s}/virus_detection/unbinned_contigs/$s.checkv.out >> $s.checkv_oldname.out
 
 cut -f 1 ${s}.viral_cluster.tsv | /work_ifs/sukmb276/software/bin/faSomeRecords $workfolder/samples/${s}/virus_detection/unbinned_contigs/$s.checkv.candidates.fna /dev/stdin $s.viral_final.fna
 
-head -n 1 $workfolder/samples/${s}/virus_detection/unbinned_contigs/$s.checkv_oldname.out >  $s.checkv_final.out
+head -n 1 $workfolder/samples/${s}/virus_detection/unbinned_contigs/$s.checkv.out >  $s.checkv_final.out
 while read line; do
 read old new <<< $(echo $line)
 grep -w $old $s.checkv_oldname.out | sed "s/$old/$new/" >> $s.checkv_final.out
-sed -i "s/$old/$new/" $s.viral_final.fna
+sed -i -r "s/[>]$old$/\>$new/"  $s.viral_final.fna
 done < $workfolder/samples/${s}/virus_detection/unbinned_contigs/$s.viral_renamed.tsv
 
 cp $s.checkv_final.out $s.viral_final.fna $workfolder/samples/${s}/virus_detection/unbinned_contigs/
