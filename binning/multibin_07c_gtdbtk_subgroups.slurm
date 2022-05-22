@@ -47,4 +47,4 @@ gtdbtk classify_wf --batchfile batch --cpus $SLURM_CPUS_PER_TASK -x fa --pplacer
 
 conda deactivate
 
-cp gtdbtk_r207v2_out/GMbC_${${this_local}.*.summary.tsv $workfolder/subgroups/${this_local}
+cp gtdbtk_r207v2_out/GMbC_${this_local}.*.summary.tsv $workfolder/subgroups/${this_local}
