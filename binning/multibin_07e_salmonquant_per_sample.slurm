@@ -54,6 +54,6 @@ repair.sh in=$s.fastq out1=$s.R1.fastq out2=$s.R2.fastq outs=$s.RU.fastq interle
 
 source activate binning_env
 
-salmon quant -i $workfolder/subgroups/allgroups/GMbC_salmon_index -l IU -1 $s.R1.fastq -2 $s.R2.fastq --validateMappings -o out -p ${SLURM_CPUS_PER_TASK}
+salmon quant -i $workfolder/allgroups/salmon_index -l IU -1 $s.R1.fastq -2 $s.R2.fastq --validateMappings -o out -p ${SLURM_CPUS_PER_TASK} --meta
 
 cp out/quant.sf $workfolder/samples/${s}/${s}.salmon.out

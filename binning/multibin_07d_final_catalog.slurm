@@ -51,7 +51,7 @@ salmon index -t GMbC.catalogue.fna -i GMbC_salmon_index
 gzip GMbC.catalogue.fna
 
 cp GMbC.catalogue.mmi GMbC.catalogue.fna.gz  $workfolder/subgroups/allgroups
-cp -r GMbC_salmon_index $workfolder/subgroups/allgroups
+cp -r GMbC_salmon_index $workfolder/allgroups/salmon_index
 
 
 #
