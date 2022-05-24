@@ -16,7 +16,7 @@ write.table(clusters, paste0("GMbC", ".dRep_cluster.tsv"), sep="\t", row.names=F
 write.table(cl95_reps, paste0("GMbC", ".dRep_cluster95_representatives.tsv"), sep="\t", row.names=F,quote=F)
 
 all_sub = list.files("../subgroups/")
-all_sub = all_sub[all_sub!="boston"]
+all_sub = all_sub[all_sub!="alltax"]
 all_clusters = sapply(all_sub, function(x) read.table(paste0("../subgroups/",x,"/",x,".dRep_cluster.tsv"), head=T, stringsAsFactors=F), simplify=F) %>% do.call("rbind",.)
 
 all_reps97 = sapply(all_sub, function(x) read.table(paste0("../subgroups/",x,"/",x,".dRep_cluster97_representatives.tsv"), head=T, stringsAsFactors=F), simplify=F) %>% do.call("rbind",.)
