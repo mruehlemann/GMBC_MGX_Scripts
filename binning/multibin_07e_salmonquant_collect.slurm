@@ -42,7 +42,7 @@ ava=$(ls -d $datafolder/Assembly_${s})
 if [ "$ava" == "" ]; then exit; fi
 #if [ -e "$workfolder/samples/${s}/${s}.salmon.out" ]; then exit; fi
 
-cd $workfolder/sample/${s}/
+cd $workfolder/samples/${s}/
 
 module load R
 Rscript  $workfolder/GMBC_MGX_Scripts/binning/multibin_07e_salmon_collect.R
