@@ -46,14 +46,24 @@ ava=$(ls -d $datafolder/Assembly_${s})
 if [ "$ava" == "" ]; then exit; fi
 if [ -e "$workfolder/samples/${s}/virus_detection/binned_contigs/${s}.checkv.out" ]; then exit; fi
 
-cat $workfolder/samples/${s}/cleanbins/*.fa > allbinned.fa
+cat $workfolder/samples/${s}/cleanbins/*.fa | cut -d ' ' -f 1 > allbinned.fa
+grep '>' $workfolder/samples/${s}/cleanbins/*.fa | cut -d ' ' -f 1 | tr -d '>' | awk -F "/" '{print $NF}' | sed -r 's/[.]fa[:]/\t/' > contig_to_bin.tsv
 
-python3 $PHAMB_DIR/DeepVirFinder/dvf.py -i allbinned.fa -o DVF -l 2000
+python3 $PHAMB_DIR/DeepVirFinder/dvf.py -i allbinned.fa -o DVF -l 2000 -c ${SLURM_CPUS_PER_TASK}
 
-checkv contamination allbinned.fa checkv_out -t ${SLURM_CPUS_PER_TASK} -d $PHAMB_DIR/databases/checkv-db-v1.0/
-checkv completeness allbinned.fa checkv_out -t ${SLURM_CPUS_PER_TASK} -d $PHAMB_DIR/databases/checkv-db-v1.0/
-checkv complete_genomes allbinned.fa checkv_out
-checkv quality_summary allbinned.fa checkv_out
+awk '{if($NF == 0) print $1}' DVF/allbinned.fa_gt2000bp_dvfpred.txt | xargs -I {} grep -w {} contig_to_bin.tsv > contig_to_bin.cand.tsv
+
+for i in $(cut -f 1 contig_to_bin.cand.tsv | uniq); do
+  egrep -w $i contig_to_bin.cand.tsv | cut -f 2  | /work_ifs/sukmb276/software/bin/faSomeRecords allbinned.fa /dev/stdin tmp_${i}_viral.fna
+  echo ">${i}_viral"
+  grep -v '>' tmp_${i}_viral.fna | tr -d "\n" | awk '{print}'
+done > ${s}.viral_candidates.fa
+
+
+checkv contamination ${s}.viral_candidates.fa checkv_out -t ${SLURM_CPUS_PER_TASK} -d $PHAMB_DIR/databases/checkv-db-v1.0/
+checkv completeness ${s}.viral_candidates.fa checkv_out -t ${SLURM_CPUS_PER_TASK} -d $PHAMB_DIR/databases/checkv-db-v1.0/
+checkv complete_genomes ${s}.viral_candidates.fa checkv_out
+checkv quality_summary ${s}.viral_candidates.fa checkv_out
 
 mkdir -p $workfolder/samples/${s}/virus_detection/binned_contigs/phamb_output
 
