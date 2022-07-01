@@ -57,3 +57,8 @@ source activate binning_env
 salmon quant -i $workfolder/allgroups/salmon_index -l IU -1 $s.R1.fastq -2 $s.R2.fastq --validateMappings -o out -p ${SLURM_CPUS_PER_TASK} --meta
 
 cp out/quant.sf $workfolder/samples/${s}/${s}.salmon.out
+
+cd $workfolder/samples/${s}/
+
+module load R
+Rscript  $workfolder/GMBC_MGX_Scripts/binning/multibin_07e_salmon_collect.R
