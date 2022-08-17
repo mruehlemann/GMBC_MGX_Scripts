@@ -37,7 +37,7 @@ PROJECTID="GMbC"
 
 cd $workfolder/allgroups
 
-gtdbtk classify_wf --batchfile $workfolder/allgroups/GMbC.representatives_list --cpus $SLURM_CPUS_PER_TASK -x fa --pplacer_cpus $SLURM_CPUS_PER_TASK --full_tree --out_dir gtdbtk_r207v2_out --prefix GMbC_fulltree
+gtdbtk classify_wf --batchfile $workfolder/allgroups/GMbC.representatives_list --cpus $SLURM_CPUS_PER_TASK -x fa --pplacer_cpus $SLURM_CPUS_PER_TASK --out_dir gtdbtk_r207v2_out --prefix GMbC_fulltree
 
 head -n 1 gtdbtk_r207v2_out/${PROJECTID}_fulltree.ar53.summary.tsv | cut -f 1-2 > ${PROJECTID}.cluster_final_tax.tsv
 tail -n+2 gtdbtk_r207v2_out/${PROJECTID}_fulltree.ar53.summary.tsv | cut -f 1-2 >>  ${PROJECTID}.cluster_final_tax.tsv

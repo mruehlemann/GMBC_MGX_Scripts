@@ -141,5 +141,5 @@ cd /$workfolder/allgroups/
 
 while read line; do
 read genome cluster_95 domain score cluster_95_final <<< $(echo $line)
-grep -w $genome GMbC.rep97.cleanbins_list | awk -v cl=$cluster_95_final '{print $1"\t"cl}'
+grep -w $genome GMbC.rep97.cleanbins_list  GMbC.rep97_mq.cleanbins_list | cut -d ':' -f 2| awk -v cl=$cluster_95_final '{print $1"\t"cl}'
 done < GMbC.dRep_cluster95_representatives.tsv | tee GMbC.representatives_list
