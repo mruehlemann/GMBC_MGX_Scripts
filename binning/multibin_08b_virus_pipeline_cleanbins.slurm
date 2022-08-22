@@ -1,6 +1,6 @@
 #!/bin/bash
-#SBATCH -c 6
-#SBATCH --mem=60Gb
+#SBATCH -c 4
+#SBATCH --mem=40Gb
 #SBATCH --time=10-00:00
 #SBATCH --output=/work_ifs/ikmb_repository/shared/microbiome/GMbC_binning/log/%A_%a.out
 #SBATCH --job-name="mb_06b_checkm"
@@ -46,28 +46,31 @@ ava=$(ls -d $datafolder/Assembly_${s})
 if [ "$ava" == "" ]; then exit; fi
 if [ -e "$workfolder/samples/${s}/virus_detection/binned_contigs/${s}.checkv.out" ]; then exit; fi
 
-cat $workfolder/samples/${s}/cleanbins/*.fa | cut -d ' ' -f 1 > allbinned.fa
+cat $workfolder/samples/${s}/cleanbins/*.fa | cut -d ' ' -f 1  > allbinned.fa
 grep '>' $workfolder/samples/${s}/cleanbins/*.fa | cut -d ' ' -f 1 | tr -d '>' | awk -F "/" '{print $NF}' | sed -r 's/[.]fa[:]/\t/' > contig_to_bin.tsv
 
-python3 $PHAMB_DIR/DeepVirFinder/dvf.py -i allbinned.fa -o DVF -l 2000 -c ${SLURM_CPUS_PER_TASK}
+python3 $PHAMB_DIR/DeepVirFinder/dvf.py -i allbinned.fa -o DVF -l 10000
 
-awk '{if($NF == 0) print $1}' DVF/allbinned.fa_gt2000bp_dvfpred.txt | xargs -I {} grep -w {} contig_to_bin.tsv > contig_to_bin.cand.tsv
+awk '{if($NF <= 0.01) print $1}' DVF/allbinned.fa_gt10000bp_dvfpred.txt | xargs -I {} grep -w {} contig_to_bin.tsv > contig_to_bin.cand.tsv
 
-for i in $(cut -f 1 contig_to_bin.cand.tsv | uniq); do
-  egrep -w $i contig_to_bin.cand.tsv | cut -f 2  | /work_ifs/sukmb276/software/bin/faSomeRecords allbinned.fa /dev/stdin tmp_${i}_viral.fna
-  echo ">${i}_viral"
-  grep -v '>' tmp_${i}_viral.fna | tr -d "\n" | awk '{print}'
-done > ${s}.viral_candidates.fa
+# for i in $(cut -f 2 contig_to_bin.cand.tsv | uniq); do
+#   egrep -w $i contig_to_bin.cand.tsv | cut -f 2  |
+#   echo ">${i}_viral"
+#   grep -v '>' tmp_${i}_viral.fna | tr -d "\n" | awk '{print}'
+# done > ${s}.viral_candidates.fa
 
+cut -f 2 contig_to_bin.cand.tsv  | /work_ifs/sukmb276/software/bin/faSomeRecords allbinned.fa /dev/stdin ${s}.viral_candidates.fa
 
 checkv contamination ${s}.viral_candidates.fa checkv_out -t ${SLURM_CPUS_PER_TASK} -d $PHAMB_DIR/databases/checkv-db-v1.0/
 checkv completeness ${s}.viral_candidates.fa checkv_out -t ${SLURM_CPUS_PER_TASK} -d $PHAMB_DIR/databases/checkv-db-v1.0/
 checkv complete_genomes ${s}.viral_candidates.fa checkv_out
 checkv quality_summary ${s}.viral_candidates.fa checkv_out
 
-mkdir -p $workfolder/samples/${s}/virus_detection/binned_contigs/phamb_output
-
 cp checkv_out/quality_summary.tsv $workfolder/samples/${s}/virus_detection/binned_contigs/${s}.checkv.out
+head -n 1 checkv_out/quality_summary.tsv > $workfolder/samples/${s}/virus_detection/binned_contigs/${s}.checkv.proviruses.out
+cat checkv_out/quality_summary.tsv | awk -F '\t' '{if($3=="Yes") print}' >> $workfolder/samples/${s}/virus_detection/binned_contigs/${s}.checkv.proviruses.out
+
+touch $workfolder/samples/${s}/virus_detection/binned_contigs/${s}.checkv.proviruses.fna
 if [ -f "checkv_out/proviruses.fna" ]; then
 cp checkv_out/proviruses.fna $workfolder/samples/${s}/virus_detection/binned_contigs/${s}.checkv.proviruses.fna
 fi

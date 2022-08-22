@@ -30,9 +30,9 @@ all_local=($(cut -f 3 /work_ifs/sukmb276/Metagenomes/projects/210916_GMBC_MGX/me
 #local_samples=$(awk -veth=${this_local} '{if($3==eth) print $1}' /work_ifs/sukmb276/Metagenomes/projects/210916_GMBC_MGX/metadata_gmbc_bn10_complete.tsv)
 all_samples=($(cut -f 1 /work_ifs/sukmb276/Metagenomes/projects/210916_GMBC_MGX/metadata_gmbc_bn10_complete.tsv))
 #all_samples=($(ls -d $datafolder/Assembly_* | awk -F'_' '{print $NF}'))
-s=${all_samples[$SLURM_ARRAY_TASK_ID]}
+#s=${all_samples[$SLURM_ARRAY_TASK_ID]}
 
-this_local=$(grep -w $s /work_ifs/sukmb276/Metagenomes/projects/210916_GMBC_MGX/metadata_gmbc_bn10_complete.tsv | cut -f 3 )
+#this_local=$(grep -w $s /work_ifs/sukmb276/Metagenomes/projects/210916_GMBC_MGX/metadata_gmbc_bn10_complete.tsv | cut -f 3 )
 
 #############################
 ####    MAXBIN DEFAULT #######
@@ -42,44 +42,24 @@ cd $TMPDIR
 source activate phamb-1.0.2_env
 PHAMB_DIR="/work_ifs/ikmb_repository/shared/microbiome/databases/phamb_ressources"
 
-ava=$(ls -d $datafolder/Assembly_${s})
-if [ "$ava" == "" ]; then exit; fi
-if [ -e "$workfolder/samples/${s}/virus_detection/unbinned_contigs/${s}.checkv_final.out" ]; then exit; fi
+#ava=$(ls -d $datafolder/Assembly_${s})
+#if [ "$ava" == "" ]; then exit; fi
+#if [ -e "$workfolder/samples/${s}/virus_detection/unbinned_contigs/${s}.checkv_final.out" ]; then exit; fi
 
-cat $workfolder/samples/${s}/virus_detection/unbinned_contigs/$s.checkv.candidates.fna | awk '{print $1}' | sed -E 's/([._][0-9]+)([_]1$)/\1/' > ${s}.cnd.fna
-### get seqs with at least low viral confidence
-egrep "quality|Complete" $workfolder/samples/${s}/virus_detection/unbinned_contigs/$s.checkv.out | awk '{if($10 >= 50) print $1}' | /work_ifs/sukmb276/software/bin/faSomeRecords ${s}.cnd.fna /dev/stdin $s.viral.fna
+cat $workfolder/samples/*/virus_detection/*.blast.out > $workfolder/allgroups/viral_catalog/all.viral.blast.tsv
 
 ### from checkv website: https://bitbucket.org/berkeleylab/checkv/src/master/
 #First, create a blast+ database:
-makeblastdb -in $s.viral.fna -dbtype nucl -out $s.viral.db
+#makeblastdb -in all.viral_final.fna -dbtype nucl -out  $workfolder/allgroups/viral_catalog/all.viral.db
 
 #Next, use megablast from blast+ package to perform all-vs-all blastn of sequences:
-blastn -query $s.viral.fna -db $s.viral.db -outfmt '6 std qlen slen' -max_target_seqs 10000 -out viral.blast.tsv -num_threads ${SLURM_CPUS_PER_TASK}
+#blastn -query all.viral_final.fna -db all.viral.db -outfmt '6 std qlen slen' -max_target_seqs 10000 -out viral.blast.tsv -num_threads ${SLURM_CPUS_PER_TASK}
 
 #Note: using the -perc_identity flag will speed up the search at the cost of sensitivity:
 #blastn -query <my_seqs.fna> -db <my_db> -outfmt '6 std qlen slen' -max_target_seqs 10000 -perc_identity 90 -o <my_blast.tsv> -num_threads 32
 
 #Next, calculate pairwise ANI by combining local alignments between sequence pairs:
-python $PHAMB_DIR/checkv/scripts/anicalc.py -i viral.blast.tsv -o ${s}.ani.tsv
+python $PHAMB_DIR/checkv/scripts/anicalc.py -i $workfolder/allgroups/viral_catalog/all.viral.blast.tsv -o $workfolder/allgroups/viral_catalog/all.ani.tsv
 
 #Finally, perform UCLUST-like clustering using the MIUVIG recommended-parameters (95% ANI + 85% AF):
-python $PHAMB_DIR/checkv/scripts/aniclust.py --fna $s.viral.fna --ani ${s}.ani.tsv --out ${s}.viral_cluster.tsv --min_ani 95 --min_tcov 85 --min_qcov 0
-
-#### keep good quality
-
-cut -f 1 $s.viral_cluster.tsv | awk -v s=$s '{print $0"\t"s"_viral_" ++i}' > $workfolder/samples/${s}/virus_detection/unbinned_contigs/$s.viral_renamed.tsv
-
-head -n 1 $workfolder/samples/${s}/virus_detection/unbinned_contigs/$s.checkv.out > $s.checkv_oldname.out
-cut -f 1 ${s}.viral_cluster.tsv | xargs -I{} grep -w {} $workfolder/samples/${s}/virus_detection/unbinned_contigs/$s.checkv.out >> $s.checkv_oldname.out
-
-cut -f 1 ${s}.viral_cluster.tsv | /work_ifs/sukmb276/software/bin/faSomeRecords ${s}.cnd.fna /dev/stdin $s.viral_final.fna
-
-head -n 1 $workfolder/samples/${s}/virus_detection/unbinned_contigs/$s.checkv.out >  $s.checkv_final.out
-while read line; do
-read old new <<< $(echo $line)
-grep -w $old $s.checkv_oldname.out | sed "s/$old/$new/" >> $s.checkv_final.out
-sed -i -r "s/[>]$old$/\>$new/"  $s.viral_final.fna
-done < $workfolder/samples/${s}/virus_detection/unbinned_contigs/$s.viral_renamed.tsv
-
-cp $s.checkv_final.out $s.viral_final.fna $workfolder/samples/${s}/virus_detection/unbinned_contigs/
+python $PHAMB_DIR/checkv/scripts/aniclust.py --fna $workfolder/allgroups/viral_catalog/all.viral_final.fna --ani $workfolder/allgroups/viral_catalog/all.ani.tsv --out $workfolder/allgroups/viral_catalog/all.viral_cluster.tsv --min_ani 95 --min_tcov 85 --min_qcov 0
