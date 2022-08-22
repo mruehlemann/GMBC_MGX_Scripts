@@ -46,9 +46,9 @@ ava=$(ls -d $datafolder/Assembly_${s})
 if [ "$ava" == "" ]; then exit; fi
 if [ -e "$workfolder/samples/${s}/virus_detection/unbinned_contigs/${s}.checkv_final.out" ]; then exit; fi
 
-
+cat $workfolder/samples/${s}/virus_detection/unbinned_contigs/$s.checkv.candidates.fna | awk '{print $1}' | sed -E 's/([._][0-9]+)([_]1$)/\1/' > ${s}.cnd.fna
 ### get seqs with at least low viral confidence
-egrep "quality|Complete" $workfolder/samples/${s}/virus_detection/unbinned_contigs/$s.checkv.out | awk '{if($10 >= 50) print $1}' | /work_ifs/sukmb276/software/bin/faSomeRecords $workfolder/samples/${s}/virus_detection/unbinned_contigs/$s.checkv.candidates.fna /dev/stdin $s.viral.fna
+egrep "quality|Complete" $workfolder/samples/${s}/virus_detection/unbinned_contigs/$s.checkv.out | awk '{if($10 >= 50) print $1}' | /work_ifs/sukmb276/software/bin/faSomeRecords ${s}.cnd.fna /dev/stdin $s.viral.fna
 
 ### from checkv website: https://bitbucket.org/berkeleylab/checkv/src/master/
 #First, create a blast+ database:
@@ -73,7 +73,7 @@ cut -f 1 $s.viral_cluster.tsv | awk -v s=$s '{print $0"\t"s"_viral_" ++i}' > $wo
 head -n 1 $workfolder/samples/${s}/virus_detection/unbinned_contigs/$s.checkv.out > $s.checkv_oldname.out
 cut -f 1 ${s}.viral_cluster.tsv | xargs -I{} grep -w {} $workfolder/samples/${s}/virus_detection/unbinned_contigs/$s.checkv.out >> $s.checkv_oldname.out
 
-cut -f 1 ${s}.viral_cluster.tsv | /work_ifs/sukmb276/software/bin/faSomeRecords $workfolder/samples/${s}/virus_detection/unbinned_contigs/$s.checkv.candidates.fna /dev/stdin $s.viral_final.fna
+cut -f 1 ${s}.viral_cluster.tsv | /work_ifs/sukmb276/software/bin/faSomeRecords ${s}.cnd.fna /dev/stdin $s.viral_final.fna
 
 head -n 1 $workfolder/samples/${s}/virus_detection/unbinned_contigs/$s.checkv.out >  $s.checkv_final.out
 while read line; do
