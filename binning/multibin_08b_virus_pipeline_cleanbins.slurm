@@ -66,6 +66,8 @@ checkv completeness ${s}.viral_candidates.fa checkv_out -t ${SLURM_CPUS_PER_TASK
 checkv complete_genomes ${s}.viral_candidates.fa checkv_out
 checkv quality_summary ${s}.viral_candidates.fa checkv_out
 
+mkdir -p $workfolder/samples/${s}/virus_detection/binned_contigs
+
 cp checkv_out/quality_summary.tsv $workfolder/samples/${s}/virus_detection/binned_contigs/${s}.checkv.out
 head -n 1 checkv_out/quality_summary.tsv > $workfolder/samples/${s}/virus_detection/binned_contigs/${s}.checkv.proviruses.out
 cat checkv_out/quality_summary.tsv | awk -F '\t' '{if($3=="Yes") print}' >> $workfolder/samples/${s}/virus_detection/binned_contigs/${s}.checkv.proviruses.out

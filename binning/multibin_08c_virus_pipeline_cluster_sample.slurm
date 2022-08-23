@@ -83,4 +83,4 @@ grep -w $old $s.checkv_oldname.out | sed "s/$old/$new/" >> $s.checkv_final.out
 sed -i -r "s/[>]$old$/\>$new/"  $s.viral_final.fna
 done < $workfolder/samples/${s}/virus_detection/$s.viral_renamed.tsv
 
-cp $s.checkv_final.out $s.viral_final.fna $workfolder/samples/${s}/virus_detection/
+cp $s.checkv_final.out $s.viral_final.fna ${s}.viral_cluster.tsv $workfolder/samples/${s}/virus_detection/ 
