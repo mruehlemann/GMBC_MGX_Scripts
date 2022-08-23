@@ -30,7 +30,7 @@ all_local=($(cut -f 3 /work_ifs/sukmb276/Metagenomes/projects/210916_GMBC_MGX/me
 #local_samples=$(awk -veth=${this_local} '{if($3==eth) print $1}' /work_ifs/sukmb276/Metagenomes/projects/210916_GMBC_MGX/metadata_gmbc_bn10_complete.tsv)
 all_samples=($(cut -f 1 /work_ifs/sukmb276/Metagenomes/projects/210916_GMBC_MGX/metadata_gmbc_bn10_complete.tsv))
 #all_samples=($(ls -d $datafolder/Assembly_* | awk -F'_' '{print $NF}'))
-#s=${all_samples[$SLURM_ARRAY_TASK_ID]}
+s=${all_samples[$SLURM_ARRAY_TASK_ID]}
 
 this_local=$(grep -w $s /work_ifs/sukmb276/Metagenomes/projects/210916_GMBC_MGX/metadata_gmbc_bn10_complete.tsv | cut -f 3 )
 
@@ -83,4 +83,4 @@ grep -w $old $s.checkv_oldname.out | sed "s/$old/$new/" >> $s.checkv_final.out
 sed -i -r "s/[>]$old$/\>$new/"  $s.viral_final.fna
 done < $workfolder/samples/${s}/virus_detection/$s.viral_renamed.tsv
 
-cp $s.checkv_final.out $s.viral_final.fna ${s}.viral_cluster.tsv $workfolder/samples/${s}/virus_detection/ 
+cp $s.checkv_final.out $s.viral_final.fna ${s}.viral_cluster.tsv $workfolder/samples/${s}/virus_detection/
