@@ -130,7 +130,7 @@ for i in $(ls candidate_bins | sed 's/[.]fa$//'); do echo $i $(cat candidate_bin
 for i in $(cut -d ' ' -f 1 keep.tsv); do
 echo ">"$i
 cat candidate_bins/$i.fa | grep -v '>' | tr -d '\n'
-echo -E "\n"
+echo -e "\n"
 done > viral_candidates.fna
 
 source activate phamb-1.0.2_env
@@ -140,7 +140,7 @@ checkv completeness viral_candidates.fna checkv_out -t ${SLURM_CPUS_PER_TASK} -d
 checkv complete_genomes viral_candidates.fna checkv_out
 checkv quality_summary viral_candidates.fna checkv_out
 
-mkdir checkv_out/quality_summary.tsv $workfolder/samples/${s}/virus_detection/unbinned_contigs_new
+mkdir $workfolder/samples/${s}/virus_detection/unbinned_contigs_new
 
 cp checkv_out/quality_summary.tsv $workfolder/samples/${s}/virus_detection/unbinned_contigs_new/${s}.checkv.out
 cat checkv_out/*.fna > $workfolder/samples/${s}/virus_detection/unbinned_contigs_new/${s}.checkv.candidates.fna
