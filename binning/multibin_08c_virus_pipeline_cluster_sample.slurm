@@ -50,7 +50,7 @@ if [ -e "$workfolder/samples/${s}/virus_detection/${s}.checkv_final.out" ]; then
 cat $workfolder/samples/${s}/virus_detection/unbinned_contigs_new/$s.checkv.candidates.fna $workfolder/samples/${s}/virus_detection/binned_contigs/$s.checkv.proviruses.fna | awk '{print $1}' | sed -E 's/([._][0-9]+)([_]1$)/\1/' > ${s}.cnd.fna
 ### get seqs with at least low viral confidence
 #cat $workfolder/samples/${s}/virus_detection/unbinned_contigs/$s.checkv.out $workfolder/samples/${s}/virus_detection/single_contigs/$s.checkv.out $workfolder/samples/${s}/virus_detection/binned_contigs/$s.checkv.proviruses.out | egrep "quality|Complete"  | awk '{if($10 >= 50 && $1!="contig_id") print}' > $s.checkv_cand_on.out
-cat $workfolder/samples/${s}/virus_detection/unbinned_contigs_new/$s.checkv.out $workfolder/samples/${s}/virus_detection/binned_contigs/$s.checkv.proviruses.out | egrep "quality|Complete"  | awk '{if($10 >= 50 && $1!="contig_id") print}' > $s.checkv_cand_on.out
+cat $workfolder/samples/${s}/virus_detection/unbinned_contigs_new/$s.checkv.out $workfolder/samples/${s}/virus_detection/binned_contigs/$s.checkv.proviruses.out | egrep "quality|Complete"  | grep -v concoct | awk '{if($10 >= 50 && $1!="contig_id") print}' > $s.checkv_cand_on.out
 cat $s.checkv_cand_on.out | cut -f 1 | /work_ifs/sukmb276/software/bin/faSomeRecords ${s}.cnd.fna /dev/stdin $s.viral.fna
 
 ### from checkv website: https://bitbucket.org/berkeleylab/checkv/src/master/
@@ -73,12 +73,12 @@ python $PHAMB_DIR/checkv/scripts/aniclust.py --fna $s.viral.fna --ani ${s}.ani.t
 
 cut -f 1 $s.viral_cluster.tsv | awk -v s=$s '{printf $0"\t"s"_viral_"; printf("%05d\n", ++i)}' > $workfolder/samples/${s}/virus_detection/$s.viral_renamed.tsv
 
-head -n 1 $workfolder/samples/${s}/virus_detection/unbinned_contigs/$s.checkv.out > $s.checkv_oldname.out
+head -n 1 $workfolder/samples/${s}/virus_detection/unbinned_contigs_new/$s.checkv.out > $s.checkv_oldname.out
 cut -f 1 ${s}.viral_cluster.tsv | xargs -I{} grep -w {}  $s.checkv_cand_on.out >> $s.checkv_oldname.out
 
 cut -f 1 ${s}.viral_cluster.tsv | /work_ifs/sukmb276/software/bin/faSomeRecords ${s}.cnd.fna /dev/stdin $s.viral_final.fna
 
-head -n 1 $workfolder/samples/${s}/virus_detection/unbinned_contigs/$s.checkv.out >  $s.checkv_final.out
+head -n 1 $workfolder/samples/${s}/virus_detection/unbinned_contigs_new/$s.checkv.out >  $s.checkv_final.out
 while read line; do
 read old new <<< $(echo $line)
 grep -w $old $s.checkv_oldname.out | sed "s/$old/$new/" >> $s.checkv_final.out
