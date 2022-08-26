@@ -46,4 +46,8 @@ ava=$(ls -d $datafolder/Assembly_${s})
 if [ "$ava" == "" ]; then exit; fi
 if [ -e "$workfolder/samples/${s}/virus_detection/${s}.blast.out" ]; then exit; fi
 
-blastn -query $workfolder/samples/${s}/virus_detection/${s}.viral_final.fna -db $workfolder/allgroups/viral_catalog/all.viral.db -outfmt '6 std qlen slen' -max_target_seqs 10000 -out $workfolder/samples/${s}/virus_detection/${s}.blast.out -num_threads ${SLURM_CPUS_PER_TASK}
+blastn -query $workfolder/samples/${s}/virus_detection/${s}.viral_final.fna -db $workfolder/allgroups/viral_catalog/blast_dbs/GMbC.viral.db -outfmt '6 std qlen slen' -max_target_seqs 10000 -out $workfolder/samples/${s}/virus_detection/${s}.GMbC.blast.out -num_threads ${SLURM_CPUS_PER_TASK}
+blastn -query $workfolder/samples/${s}/virus_detection/${s}.viral_final.fna -db $workfolder/allgroups/viral_catalog/blast_dbs/GMbC_plus_MGV.viral.db -outfmt '6 std qlen slen' -max_target_seqs 10000 -out $workfolder/samples/${s}/virus_detection/${s}.GMbC_and_MGV.blast.out -num_threads ${SLURM_CPUS_PER_TASK}
+
+python $PHAMB_DIR/checkv/scripts/anicalc.py -i $workfolder/samples/${s}/virus_detection/${s}.GMbC.blast.out -o $workfolder/samples/${s}/virus_detection/${s}.GMbC.ani.tsv
+python $PHAMB_DIR/checkv/scripts/anicalc.py -i $workfolder/samples/${s}/virus_detection/${s}.GMbC_and_MGV.blast.out -o $workfolder/samples/${s}/virus_detection/${s}.GMbC_and_MGV.ani.tsv

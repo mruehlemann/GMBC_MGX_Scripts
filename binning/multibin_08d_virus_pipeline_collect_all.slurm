@@ -46,14 +46,18 @@ PHAMB_DIR="/work_ifs/ikmb_repository/shared/microbiome/databases/phamb_ressource
 #if [ "$ava" == "" ]; then exit; fi
 #if [ -e "$workfolder/samples/${s}/virus_detection/unbinned_contigs/${s}.checkv_final.out" ]; then exit; fi
 
-cat $workfolder/samples/*/virus_detection/*.viral_final.fna > all.viral_final.fna
+cat $workfolder/samples/*/virus_detection/*.viral_final.fna > GMbC.viral_final.fna
 
-mkdir -p $workfolder/allgroups/viral_catalog
-cp all.viral_final.fna  $workfolder/allgroups/viral_catalog/
+mkdir -p $workfolder/allgroups/viral_catalog/blast_dbs
+cp GMbC.viral_final.fna  $workfolder/allgroups/viral_catalog/
 
 ### from checkv website: https://bitbucket.org/berkeleylab/checkv/src/master/
 #First, create a blast+ database:
-makeblastdb -in all.viral_final.fna -dbtype nucl -out  $workfolder/allgroups/viral_catalog/all.viral.db
+makeblastdb -in GMbC.viral_final.fna -dbtype nucl -out  $workfolder/allgroups/viral_catalog/blast_dbs/GMbC.viral.db
+
+cat GMbC.viral_final.fna  /work_ifs/ikmb_repository/shared/microbiome/databases/MGV_v1.0_2021_07_08/mgv_votu_representatives.fna > GMbC_plus_MGV.viral.fna
+makeblastdb -in GMbC_plus_MGV.viral.fna -dbtype nucl -out  $workfolder/allgroups/viral_catalog/blast_dbs/GMbC_plus_MGV.viral.db
+
 
 # #Next, use megablast from blast+ package to perform all-vs-all blastn of sequences:
 # blastn -query all.viral_final.fna -db all.viral.db -outfmt '6 std qlen slen' -max_target_seqs 10000 -out viral.blast.tsv -num_threads ${SLURM_CPUS_PER_TASK}
