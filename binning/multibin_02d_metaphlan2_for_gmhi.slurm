@@ -1,7 +1,7 @@
 #!/bin/bash
-#SBATCH -c 8
-#SBATCH --mem=120Gb
-#SBATCH --time=10-00:00
+#SBATCH -c 4
+#SBATCH --mem=40Gb
+#SBATCH --time=1-00:00
 #SBATCH --output=/work_ifs/ikmb_repository/shared/microbiome/GMbC_binning/log/%A_%a.out
 #SBATCH --job-name="mb_02b_map"
 
@@ -10,13 +10,14 @@
 ###########################
 echo $SLURMD_NODENAME
 
-workfolder="/work_ifs/ikmb_repository/shared/microbiome/GMbC_binning/"
+#workfolder="/work_ifs/ikmb_repository/shared/microbiome/GMbC_binning/"
+workfolder="/work_ifs/sukmb276/Metagenomes/projects/220512_GMbC_NovaSeq/temporary_workdir/"
+
 cd $workfolder
 
 datafolder="/work_ifs/ikmb_repository/shared/microbiome/GMbC/Assemblies_megahit"
 datafolder_reads="/work_ifs/ikmb_repository/shared/microbiome/rawdata/gmbc_data/NovaSeq_Data/"
 
-source activate metagenome_env
 
 #ls $workfolder/assemblies > $workfolder/samples_available.txt
 
@@ -41,17 +42,26 @@ this_local=$(grep -w $s /work_ifs/sukmb276/Metagenomes/projects/210916_GMBC_MGX/
 ####    MAPPING     #######
 ###########################
 
-mkdir -p bams
+module load miniconda3
+source activate metaphlan2_env
+export PERL5LIB=
 
 #for s in ${local_samples}; do
 #ava=$(grep $s $workfolder/samples_available.txt)
 ava=$(ls -d $datafolder/Assembly_${s})
 if [ "$ava" == "" ]; then continue; fi
-if [ -e "$workfolder/subgroups/${this_local}/${this_local}.${s}.depth.txt" ]; then exit; fi
-echo $s
-minimap2 -t ${SLURM_CPUS_PER_TASK} -N 50 -ax sr  $workfolder/subgroups/${this_local}/${this_local}.catalogue.mmi $datafolder_reads/${s}_P_1.fastq.gz $datafolder_reads/${s}_P_2.fastq.gz > $s.minimap.sam
-samtools view -F 3584 -b --threads ${SLURM_CPUS_PER_TASK} $s.minimap.sam | samtools sort > bams/$s.minimap.bam
-rm $s.minimap.sam
-#done
+mkdir -p $workfolder/samples/$s/
+reads=$(ls $datafolder_reads/${s}_P_1.fastq.gz)
+if [ "$reads" == "" ]; then
 
-jgi_summarize_bam_contig_depths --outputDepth $workfolder/subgroups/${this_local}/${this_local}.${s}.depth.txt bams/*
+module load samtools/1.9
+
+samtools bam2fq $datafolder/Assembly_${s}/$s.sorted.bam > $s.fastq
+sed -i '/^@/ s/[.][12][/]/\//' $s.fastq
+repair.sh in=$s.fastq out1=$s.R1.fastq out2=$s.R2.fastq outs=$s.RU.fastq interleaved=true overwrite=true
+cat $s.R1.fastq $s.R2.fastq | metaphlan2.py --input_type fastq --nproc $SLURM_CPUS_PER_TASK -x mpa_v20_m200 --bowtie2db /work_ifs/ikmb_repository/databases/Metaphlan/2.0/ > $workfolder/samples/$s/$s.metaphlan2.out
+
+else
+zcat $datafolder_reads/${s}_P_1.fastq.gz $datafolder_reads/${s}_P_2.fastq.gz | metaphlan2.py --input_type fastq --nproc $SLURM_CPUS_PER_TASK -x mpa_v20_m200 --bowtie2db /work_ifs/ikmb_repository/databases/Metaphlan/2.0/ > $workfolder/samples/$s/$s.metaphlan2.out
+
+fi
