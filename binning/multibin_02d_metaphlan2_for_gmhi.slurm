@@ -2,7 +2,7 @@
 #SBATCH -c 4
 #SBATCH --mem=40Gb
 #SBATCH --time=1-00:00
-#SBATCH --output=/work_ifs/ikmb_repository/shared/microbiome/GMbC_binning/log/%A_%a.out
+#SBATCH --output=/work_ifs/sukmb276/Metagenomes/projects/220512_GMbC_NovaSeq/temporary_workdir/log/%A_%a.out
 #SBATCH --job-name="mb_02b_map"
 
 ###########################
